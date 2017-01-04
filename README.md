@@ -6,7 +6,7 @@ This is the repo for the Hinton Lab RNA-seq pipeline
 
 ## General updates
 
-This repo only contains the pipeline wrapper and the QC / GFF modules - more to follow once testing is complete
+This repo only contains the pipeline wrapper and the basic QC / GFF modules - more to follow once testing is complete
 
 
 ## Contact

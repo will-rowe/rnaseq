@@ -25,3 +25,6 @@ parallel_jobs = '1'
 trimmomatic_min_length = '40'
 kraken_db = '/pub46/willr/000_HOME/0002_REF_DATA/0004_DBs/minikraken_20141208'
 kraken_search_term = 'Salmonella\n' # include \n to only match Genus in Kraken report file
+
+# Settings for alignment
+MAPQ_score = '10'

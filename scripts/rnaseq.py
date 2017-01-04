@@ -14,9 +14,10 @@ import collections # used for OrderedDict
 import getpass # for identifying username
 import subprocess
 import shutil # for removing temporary files
-import GFF_module as GFF_module # required pipeline modules
-import QC_module as QC_module # required pipeline modules
-import GLOBALS as GLOBALS # contains all the customisable variables that are used by the modules + main script
+import GFF_module as mGFF # required pipeline modules
+import QC_module as mQC # required pipeline modules
+import ALIGN_module as mALIGN # required pipeline modules
+import GLOBALS # contains all the customisable variables that are used by the modules + main script
 
 
 ####
@@ -164,7 +165,7 @@ def run_pipelineSetup(args):
     # read the supplied annotation file
     logging.info('checking the input annotation file . . .')
     try:
-        GFF_file = GFF_module.GFF_annotationFile(args.reference)
+        GFF_file = mGFF.GFF_annotationFile(args.reference)
     except Exception, exception:
         run_sendError(exception)
 
@@ -226,16 +227,17 @@ def main():
 
     # QC the samples
     logging.info('**** RUNNING QC ****')
-    trimmed_files = QC_module.run_initQC(args, sample_list)
+    trimmed_files = mQC.run_initQC(args, sample_list)
 
     # align the samples to the reference genome
-
+    logging.info('**** RUNNING ALIGNMENT ****')
+    mALIGN.run_alignData(args, trimmed_files, GFF_file)
 
 
 
 
     # run dupRadar
-    QC_module.run_dupRadar(GFF_file, args)
+    mQC.run_dupRadar(GFF_file, args)
 
 
 

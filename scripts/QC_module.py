@@ -62,7 +62,7 @@ def run_initQC(args, sample_list):
     trimmomatic is used to quality trim the reads and remove adapters
     once QC has run, multiqc generates a report for all samples
     """
-    # set up initial QC
+    # set up QC directory
     QC_dir = '{}/QC' .format(args.results_dir)
     try:
         os.makedirs(QC_dir)
@@ -147,10 +147,8 @@ def run_initQC(args, sample_list):
 
 def run_dupRadar(GFF_file, args):
     """ Function to run dupRadar.R script
-
     this function will be added to the pipeline at a later date
     currently there are no checks for the dupRadar library
     """
 
     dupradar_cmd = 'dupRadar.R infile.bam {} stranded=yes paired=no outdir=./dupRadar threads={}' .format(GFF_file.gff_filename, str(args.threads))
-    print dupradar_cmd
