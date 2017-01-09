@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 __author__ = 'Will Rowe'
-__version__ = 1.0
-__mantainer__ = "Will Rowe"
 __mail__ = "will.rowe@liverpool.ac.uk"
 
 import os
@@ -69,6 +67,7 @@ def run_initQC(args, sample_list):
     except Exception, e:
         run_sendError(e)
     half_threads = int(args.threads) / 2
+    logging.info('now running fastqc, kraken and trimmomatic . . .')
 
     # initial fastqc run
     initial_FASTQC_dir = '{}/initial_FASTQC_results' .format(QC_dir)
@@ -135,7 +134,7 @@ def run_initQC(args, sample_list):
         p1 = subprocess.Popen(multiqc_cmd, shell=True, stdout=qc_log, stderr=qc_log)
         processes.append(p1)
 
-    # wait for trimmomatic subprocesses to complete:
+    # wait for multiqc subprocess to complete:
     exit_codes = [p.wait() for p in processes]
 
     # return a list of trimmed files:
@@ -145,10 +144,46 @@ def run_initQC(args, sample_list):
     return trimmed_files
 
 
-def run_dupRadar(GFF_file, args):
+def run_dupRadar(bam_files, GFF_file, args):
     """ Function to run dupRadar.R script
-    this function will be added to the pipeline at a later date
-    currently there are no checks for the dupRadar library
+    currently there are no checks for the required R libraries (e.g. dupRadar, rsubread etc.)
     """
+    # create a dupRadar dir
+    dupRadar_dir = '{}/QC/dupRadar' .format(args.results_dir)
+    try:
+        os.makedirs(dupRadar_dir)
+    except Exception, e:
+        run_sendError(e)
 
-    dupradar_cmd = 'dupRadar.R infile.bam {} stranded=yes paired=no outdir=./dupRadar threads={}' .format(GFF_file.gff_filename, str(args.threads))
+    # mark duplicates
+    logging.info('now running biobambam2/bammarkduplicates2 . . .')
+    biobambam_cmd = 'bammarkduplicates2 I={{}} O={}/{{/.}}.markeddup.bam' .format(dupRadar_dir)
+    parallel_biobambam_cmd = 'printf \'{}\' | parallel -S {} --env PATH --workdir $PWD -j {} --delay 1.0 \'{}\'' .format('\\n'.join(bam_files), GLOBALS.SSH_list, GLOBALS.parallel_jobs, biobambam_cmd)
+
+    # run subprocess
+    processes = []
+    with open('{}/markdup.errorlog' .format(dupRadar_dir), 'a') as rmdup_log:
+        p1 = subprocess.Popen(parallel_biobambam_cmd, shell=True, stderr=rmdup_log, stdout=rmdup_log)
+        processes.append(p1)
+
+    # wait for bt2 subprocess to complete:
+    exit_codes = [p.wait() for p in processes]
+
+    # get a list of the marked bam files
+    rmdup_bam_files = []
+    for bam_file in glob.glob('{}/*.markeddup.bam' .format(dupRadar_dir)):
+            rmdup_bam_files.append(bam_file)
+
+    # run dupRadar
+    logging.info('now running dupRadar . . .')
+    dupRadar_cmd = 'dupRadar.sh {{}} {} stranded=yes paired=no outdir={} threads={}' .format(GFF_file.gff_filename, dupRadar_dir, str(args.threads))
+    parallel_dupRadar_cmd = 'printf \'{}\' | parallel -S {} --env PATH --workdir $PWD -j {} --delay 1.0 \'{}\'' .format('\\n'.join(rmdup_bam_files), GLOBALS.SSH_list, GLOBALS.parallel_jobs, dupRadar_cmd)
+
+    # run subprocess
+    processes = []
+    with open('{}/dupRadar.errorlog' .format(dupRadar_dir), 'a') as dupRadar_log:
+        p1 = subprocess.Popen(parallel_dupRadar_cmd, shell=True, stderr=dupRadar_log, stdout=dupRadar_log)
+        processes.append(p1)
+
+    # wait for bt2 subprocess to complete:
+    exit_codes = [p.wait() for p in processes]

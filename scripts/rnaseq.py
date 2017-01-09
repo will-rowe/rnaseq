@@ -1,7 +1,5 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 __author__ = 'Will Rowe'
-__version__ = 1.0
-__mantainer__ = "Will Rowe"
 __mail__ = "will.rowe@liverpool.ac.uk"
 
 import os
@@ -19,6 +17,10 @@ import QC_module as mQC # required pipeline modules
 import ALIGN_module as mALIGN # required pipeline modules
 import GLOBALS # contains all the customisable variables that are used by the modules + main script
 
+try:
+    from version import version_number
+except:
+    version_number = 'version unknown'
 
 ####
 # Information
@@ -26,27 +28,43 @@ import GLOBALS # contains all the customisable variables that are used by the mo
 """ The Hinton Lab RNA-seq pipeline
 
 
+Notes and caveats:
 
 only works on single end illumina data
 the pipeline checks for required programs but does not check for correct version numbers...
 only checks file name extensions - could add more stringent fastq checks
-add support for cluster and single compute node jobs
-adapter removal
-strain signature file
+adapter removal hasn't been implemented yet
+strain signature file (for checking coverage of alignment against key genes)
+need to raise some flags if dupRadar picks up possible PCR artefacts
 
 
-up to QC module - replacing fastqc with alternatives. Trying out multiqc report.
+Dependencies:
+
+parallel == 20161222
+multiqc == 0.9
+fastqc == 0.11.5
+kraken == 0.10.6
+kraken-report == 0.10.6
+trimmomatic == 0.36
+samtools == 1.3.1
+bowtie2 == 2.2.9
+bammarkduplicates2 (biobaambam2) == 0.0.191
+
+Python libraries    -   "multiqc == 0.9", "numpy == 1.7.0", "matplotlib == 1.5.3", "Jinja2 == 2.7.3", "MarkupSafe == 0.23", "multiqc == 0.8",
+R libraries         -   "dupRadar == 1.2.2", "Rsubread == 1.22.3"
+
+
 """
 
 
 ####
 # Classes
 ####
-"""
 class Analysis(object):
+    """ Class summary: a report template
 
-    Class to hold pipeline data and generate report
-
+    this class holds pipeline data and generates a report - it is being designed as an alternative to the main routine
+    """
 
     def __init__(self, data_dir, plots_dir, samples):
         self.data_dir = data_dir
@@ -54,21 +72,18 @@ class Analysis(object):
         self.samples = samples
 
     def do_some_work(self):
-        ...
+        results = function1(data_dir)
         self.results = results
 
-prj = Project("testprj")
-prj.addSampleSheet("metadata/sample_annotation.csv")
-
-analysis = Analysis("data", "results/plots", prj.samples)
-analysis.do_some_work()
-"""
+## The main workflow will then be as follows:
+#analysis = Analysis("data", "results/plots", prj.samples)
+#analysis.do_some_work()
 
 
 class customParser(argparse.ArgumentParser):
     """ Class summary: a custom argument parser
 
-    This class builds on the argparse parser to provide additional help by overiding the default error method
+    this class builds on the argparse parser to provide additional help by overiding the default error method
     """
     def __init__(self):
         description = 'The Hinton Lab RNA-seq pipeline',
@@ -87,6 +102,9 @@ class customParser(argparse.ArgumentParser):
 def run_getArguments():
     # use our custom parser class that is built from the ArgumentParser (argparse library)
     parser = customParser()
+
+    # version
+    parser.add_argument("--version", action='version', version=version_number)
 
     # set up positional arguments
     parser.add_argument('reference',
@@ -144,12 +162,13 @@ def run_pipelineSetup(args):
 
     # start the logger
     logger = run_getLogger(args)
-    logging.info('RNA-seq pipeline started by {}' .format(user))
+    logging.info('RNA-seq pipeline started by: {}' .format(user))
     logging.info('**** SETTING UP PIPELINE ****')
+    logging.info('threads for parallel steps: {}' .format(args.threads))
 
     # check required programs are installed
     logging.info('checking for required programs . . .')
-    program_list = ['parallel', 'bowtie2', 'fastqc', 'kraken', 'kraken-report', 'trimmomatic', 'samtools', 'multiqc',]
+    program_list = ['parallel', 'bowtie2', 'fastqc', 'kraken', 'kraken-report', 'trimmomatic', 'samtools', 'multiqc', 'bammarkduplicates2']
     missing_programs = []
     for program in program_list:
         try:
@@ -231,15 +250,11 @@ def main():
 
     # align the samples to the reference genome
     logging.info('**** RUNNING ALIGNMENT ****')
-    mALIGN.run_alignData(args, trimmed_files, GFF_file)
-
-
-
+    bam_files = mALIGN.run_alignData(args, trimmed_files, GFF_file)
 
     # run dupRadar
-    mQC.run_dupRadar(GFF_file, args)
-
-
+    logging.info('**** RUNNING ADDITIONAL QC ****')
+    mQC.run_dupRadar(bam_files, GFF_file, args)
 
 
 

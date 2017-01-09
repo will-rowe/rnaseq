@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 __author__ = 'Will Rowe'
-__version__ = 1.0
-__mantainer__ = "Will Rowe"
 __mail__ = "will.rowe@liverpool.ac.uk"
 
 import os
