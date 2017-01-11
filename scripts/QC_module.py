@@ -107,7 +107,7 @@ def run_initQC(args, sample_list):
 
     # calculate mean and standard deviation for kraken percentages, then flag any samples outside 1 SD of the mean
     if len(kraken_percentages) < 1:
-        logging.error(' * kraken found no hits for the keyword {} in any sample' .format(GLOBALS.kraken_search_term.rstrip('\n')))
+        logging.warning(' * kraken found no hits for the keyword {} in any sample' .format(GLOBALS.kraken_search_term.rstrip('\n')))
     else:
         run_SD(kraken_percentages)
 

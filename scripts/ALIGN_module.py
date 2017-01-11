@@ -17,11 +17,7 @@ logger = logging.getLogger(__name__)
 """ Alignment module
 
 this module maps the supplied fastq files to the bowtie2 reference
-it is a work in progress...
-add in multiqc report
 """
-# default settings
-
 
 
 ####
@@ -46,7 +42,7 @@ def run_alignData(args, sample_list, GFF_file):
     # bowtie2
     logging.info('now running bowtie2 . . .')
     bt2_ref = '{}/temp_dir/reference_fasta.fa' .format(args.results_dir)
-    bt2_cmd = 'bowtie2 -x {} -q {{}} --very-sensitive-local -p {} 2> {}/{{/.}}.bt2log | samtools view -q {} -bS - | samtools sort - -o {}/{{/.}}.sorted.bam && samtools index {}/{{/.}}.sorted.bam' .format(bt2_ref, str(args.threads), alignment_dir, GLOBALS.MAPQ_score, alignment_dir, alignment_dir)
+    bt2_cmd = 'bowtie2 -x {} -q {{}} --very-sensitive-local -p {} 2> {}/{{/.}}.bt2log | samtools view -@ {} -q {} -bS - | samtools sort -@ {} -m 1G - -o {}/{{/.}}.sorted.bam && samtools index {}/{{/.}}.sorted.bam' .format(bt2_ref, str(args.threads), alignment_dir, str(args.threads), GLOBALS.MAPQ_score, str(args.threads), alignment_dir, alignment_dir)
     parallel_bt2_cmd = 'printf \'{}\' | parallel -S {} --env PATH --workdir $PWD -j {} --delay 1.0 \'{}\'' .format('\\n'.join(sample_list), GLOBALS.SSH_list, GLOBALS.parallel_jobs, bt2_cmd)
 
     # run subprocess
@@ -58,11 +54,11 @@ def run_alignData(args, sample_list, GFF_file):
     # wait for bt2 subprocess to complete:
     exit_codes = [p.wait() for p in processes]
 
-    # count mapped reads, remove samples from further analysis if no reads mapped
+    # count mapped reads (after MAPQ filter), remove samples from further analysis if no reads mapped
     bam_files = []
     for bam_file in glob.glob('{}/*.sorted.bam' .format(alignment_dir)):
         # note that this cmd only works for single end data
-        samtools_cmd = 'samtools view -F 0x904 -c {}' .format(bam_file)
+        samtools_cmd = 'samtools view -@ {} -F 0x904 -c {}' .format(str(args.threads), bam_file)
         try:
             p = subprocess.Popen(samtools_cmd, shell=True, stdout=subprocess.PIPE)
             init_mapped_reads, err = p.communicate()
@@ -71,9 +67,13 @@ def run_alignData(args, sample_list, GFF_file):
             logger.error('failed to generate bam files')
             logger.error(e)
             sys.exit(1)
-        # flag warning if no reads map and remove sample
+        # flag warning if no reads align and remove sample
         if int(init_mapped_reads) == 0:
             logger.warning('No reads mapped for sample {}' .format(bam_file))
+        # flag warning if fewer than 5 million reads align (arbitrary value)
+        elif int(init_mapped_reads) <= 5000000:
+            logger.warning('Low number ({}) of reads mapped for sample {}' .format(init_mapped_reads.rstrip("\n"), bam_file))
+            bam_files.append(bam_file)
         else:
             bam_files.append(bam_file)
 

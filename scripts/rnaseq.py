@@ -27,6 +27,13 @@ except:
 ####
 """ The Hinton Lab RNA-seq pipeline
 
+Need to work on next:
+
+strain signature file (for checking coverage of alignment against key genes)
+need to raise some flags if dupRadar picks up possible PCR artefacts
+htseq count
+rename GFFs dir and create tests for pipeline
+
 
 Notes and caveats:
 
@@ -34,8 +41,7 @@ only works on single end illumina data
 the pipeline checks for required programs but does not check for correct version numbers...
 only checks file name extensions - could add more stringent fastq checks
 adapter removal hasn't been implemented yet
-strain signature file (for checking coverage of alignment against key genes)
-need to raise some flags if dupRadar picks up possible PCR artefacts
+
 
 
 Dependencies:
