@@ -187,3 +187,8 @@ def run_dupRadar(bam_files, GFF_file, args):
 
     # wait for bt2 subprocess to complete:
     exit_codes = [p.wait() for p in processes]
+
+    # remove intermediary files (unless told to keep)
+    if not args.keep:
+        for i in rmdup_bam_files:
+            os.remove(i)

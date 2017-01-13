@@ -55,6 +55,7 @@ trimmomatic == 0.36
 samtools == 1.3.1
 bowtie2 == 2.2.9
 bammarkduplicates2 (biobaambam2) == 0.0.191
+R == 3.2.0
 
 Python libraries    -   "multiqc == 0.9", "numpy == 1.7.0", "matplotlib == 1.5.3", "Jinja2 == 2.7.3", "MarkupSafe == 0.23", "multiqc == 0.8",
 R libraries         -   "dupRadar == 1.2.2", "Rsubread == 1.22.3"
@@ -119,16 +120,16 @@ def run_getArguments():
         help = 'list of samples to be processed (newline separated, fastq files)')
 
     # set up optional arguments
-    parser.add_argument('-c', '--checks', action = 'store_true', dest = 'checks',
-        help = 'run setup checks (checks annotation is GFF3 formatted, bowtie2 indices are present etc.)', default = True)
     parser.add_argument('-o', '--outdir', default = './hinton-rnaseq-{}' .format(time.strftime('%H%M%S')), dest = 'results_dir',
         help = 'specify the directory to put the results files (default = ./hinton-rnaseq-xxxx)')
     parser.add_argument('-l', '--logfile', default = './log.txt', dest = 'log_file',
         help = 'specify the name of the log file')
     parser.add_argument('-t', '--threads', default = '10', dest = 'threads',
         help = 'specify the number of threads to use in the multithreading steps (default = 1)')
-    parser.add_argument('-s', '--silent', action = 'store_true', dest = 'silent',
-        help = 'silent behaviour', default = False)
+    parser.add_argument('-k', '--keep-files', action = 'store_true', dest = 'keep',
+        help = 'keep intermediary files (e.g. duplication marked bams)', default = False)
+    parser.add_argument('-c', '--checks', action = 'store_true', dest = 'checks',
+        help = 'run setup checks (checks annotation is GFF3 formatted, bowtie2 indices are present etc.)', default = True)
 
     # parse the arguments and return them
     args = parser.parse_args()
@@ -174,7 +175,7 @@ def run_pipelineSetup(args):
 
     # check required programs are installed
     logging.info('checking for required programs . . .')
-    program_list = ['parallel', 'bowtie2', 'fastqc', 'kraken', 'kraken-report', 'trimmomatic', 'samtools', 'multiqc', 'bammarkduplicates2']
+    program_list = ['parallel', 'bowtie2', 'fastqc', 'kraken', 'kraken-report', 'trimmomatic', 'samtools', 'multiqc', 'bammarkduplicates2', 'R']
     missing_programs = []
     for program in program_list:
         try:
