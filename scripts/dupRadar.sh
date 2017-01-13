@@ -12,13 +12,18 @@
 ## - parameters for duplication counting routine:
 ##   stranded, paired, outdir, threads.
 
-
-########################################
-## prepare files and load dupRadar library
-
-# mark duplicates using picard markduplicates or samtools rmdup
+## make sure the input bam has marked duplicates (using picard markduplicates or biobambam2)
 #picard.sh I=bt2.output.bam.q10_filter.sorted.bam O=dupmarked.bam M=marked.txt
 
+
+########################################
+## set path to user's R libraries
+libLocation <- "/pub46/willr/R/x86_64-unknown-linux-gnu-library/3.2"
+
+
+########################################
+## load dupRadar
+.libPaths( libLocation )
 library(dupRadar)
 
 
@@ -28,7 +33,7 @@ library(dupRadar)
 args   <- commandArgs(TRUE)
 
 # input bam file (duplicates must be marked)
-bam <- args[1]
+bam <- gsub("bam=","",args[1])
 
 # GFF annotation file
 gtf <- gsub("gtf=","",args[2])
@@ -46,12 +51,6 @@ outdir   <- gsub("outdir=","",args[5])
 threads  <- as.integer(gsub("threads=","",args[6]))
 
 # command checks:
-if(length(args) != 6) {
-  stop (paste0("Usage: ./dupRadar.R <file.bam> <genes.gff> ",
-               "<stranded=[no|yes|reverse]> paired=[yes|no] ",
-               "outdir=./ threads=1"))
-}
-
 if(!file.exists(bam)) {
   stop(paste("File",bam,"does NOT exist"))
 }
@@ -78,6 +77,7 @@ if(is.na(threads)) {
 
 stranded <- if(stranded == "no") 0 else if(stranded == "yes") 1 else 2
 paired <- if(paired == "no") 0 else if(paired == "yes") 1 else 2
+
 
 ########################################
 ## Run dupRadar (have to write own function because dupRadar doesn't let you edit settings for GFF file input etc.)
