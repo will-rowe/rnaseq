@@ -175,7 +175,7 @@ def run_pipelineSetup(args):
 
     # check required programs are installed
     logging.info('checking for required programs . . .')
-    program_list = ['parallel', 'bowtie2', 'fastqc', 'kraken', 'kraken-report', 'trimmomatic', 'samtools', 'multiqc', 'bammarkduplicates2', 'R']
+    program_list = ['parallel', 'bowtie2', 'fastqc', 'kraken', 'kraken-report', 'trimmomatic', 'samtools', 'multiqc', 'bammarkduplicates2', 'R', 'Rscript']
     missing_programs = []
     for program in program_list:
         try:

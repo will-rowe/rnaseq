@@ -81,7 +81,7 @@ def run_alignData(args, sample_list, GFF_file):
     logging.info('generating multiqc report . . .')
     multiqc_cmd = 'multiqc --outdir {} --filename 00_multiqc_report {}' .format(args.results_dir, args.results_dir)
     processes = []
-    with open('{}/00_multiqc.errorlog' .format(alignment_dir), 'a') as alignment_log:
+    with open('{}/00_multiqc.errorlog' .format(args.results_dir), 'a') as alignment_log:
         p1 = subprocess.Popen(multiqc_cmd, shell=True, stdout=alignment_log, stderr=alignment_log)
         processes.append(p1)
 
