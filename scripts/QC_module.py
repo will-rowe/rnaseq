@@ -205,7 +205,7 @@ def run_covCheck(bam_files, args):
     logging.info(' * running bedtools . . .')
     alignment_dir = '{}/ALIGNMENT' .format(args.results_dir)
     bedtools_cmd = 'bedtools coverage -a {} -b {{}} > {}/{{/.}}.bedtools_output' .format(args.covCheck_ref, alignment_dir)
-    parallel_bedtools_cmd = 'printf \'{}\' | parallel -S {} --env PATH --workdir $PWD -j {} --delay 1.0 \'{}\'' .format('\\n'.join(rmdup_bam_files), GLOBALS.SSH_list, GLOBALS.parallel_jobs, bedtools_cmd)
+    parallel_bedtools_cmd = 'printf \'{}\' | parallel -S {} --env PATH --workdir $PWD -j {} --delay 1.0 \'{}\'' .format('\\n'.join(bam_files), GLOBALS.SSH_list, GLOBALS.parallel_jobs, bedtools_cmd)
 
     # run subprocess
     processes = []
@@ -215,6 +215,17 @@ def run_covCheck(bam_files, args):
 
     # wait for bt2 subprocess to complete:
     exit_codes = [p.wait() for p in processes]
+
+    bed_outputs = []
+    for output_file in glob.glob('{}/*.bedtools_output' .format(alignment_dir)):
+            bed_outputs.append(output_file)
+            with open(output_file) as fh:
+                for line in fh:
+                    if float(line.split('\t')[8]) < 1.0:
+                        logging.warning(' * coverage less than 100\% for {} in sample {}.' .format(line.split('\t')[3], output_file))
+                    else:
+                        logging.info(' * coverage == 100\% for {} in sample {}.' .format(line.split('\t')[3], output_file))
+
 
     # remove intermediary files (unless told to keep)
     #if not args.keep:
