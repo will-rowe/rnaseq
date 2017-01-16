@@ -107,7 +107,7 @@ def run_countData(args, GFF_file, bam_files):
 
     # setup htseq-count cmd
     logging.info(' * running htseq-count . . .')
-    htseq_cmd = 'htseq-count -f bam -t CDS -i ID -m intersection-nonempty -q {{}} {} > {}/{{/.}}.CDS.counts' .format(GFF_file, counts_dir)
+    htseq_cmd = 'htseq-count -f bam -t CDS -i ID -m intersection-nonempty -q {{}} {} > {}/{{/.}}.CDS.counts' .format(GFF_file.gff_filename, counts_dir)
     parallel_htseq_cmd = 'printf \'{}\' | parallel -S {} --env PATH --workdir $PWD -j {} --delay 1.0 \'{}\'' .format('\\n'.join(bam_files), GLOBALS.SSH_list, GLOBALS.parallel_jobs, htseq_cmd)
 
     # run subprocess
