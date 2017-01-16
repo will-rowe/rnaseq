@@ -15,7 +15,6 @@ This pipeline is still under active development --- extensive readme and tests t
 * Website: [Will Rowe](https://github.com/will-rowe)
 * Lab website: [hintonlab.com](http://www.hintonlab.com)
 * Email: [Will Rowe @ Liverpool](will.rowe@liverpool.ac.uk)
-* Twitter: [@will__rowe](https://twitter.com/will__rowe)
 
 
 ## Installation

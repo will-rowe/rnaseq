@@ -237,8 +237,8 @@ class GFF_annotationFile:
             gff_output_file.write('{}' .format('\n'.join(map(str, feature_list))))
 
             # write fasta to end of file (this will be unordered)
-            for key in self.file_fasta_dict:
-                gff_output_file.write('\n>{}\n{}\n' .format(key, ''.join(map(str, self.file_fasta_dict[key]))))
+            #for key in self.file_fasta_dict:
+            #    gff_output_file.write('\n>{}\n{}\n' .format(key, ''.join(map(str, self.file_fasta_dict[key]))))
 
 
     def get_featureLength(self, attribute_query):

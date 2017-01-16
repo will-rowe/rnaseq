@@ -27,13 +27,11 @@ except:
 ####
 """ The Hinton Lab RNA-seq pipeline
 
-Need to work on next:
+Currently working on:
 
-strain signature file (for checking coverage of alignment against key genes)
 need to raise some flags if dupRadar picks up possible PCR artefacts
-htseq count
-rename GFFs dir and create tests for pipeline
-
+create tests
+creating unified report document for counts / TPMs
 
 Notes and caveats:
 
@@ -41,7 +39,6 @@ only works on single end illumina data
 the pipeline checks for required programs but does not check for correct version numbers...
 only checks file name extensions - could add more stringent fastq checks
 adapter removal hasn't been implemented yet
-
 
 
 Dependencies:
@@ -288,7 +285,7 @@ def main():
     logging.info('**** RUNNING COUNTS ****')
     count_files = mALIGN.run_countData(args, GFF_file, bam_files)
 
-    # generate report
+    # generate reports
     logging.info('**** GENERATING REPORT ****')
     logging.info('setting up record . . .')
     for i in count_files:
@@ -300,10 +297,8 @@ def main():
         report_file.get_featureCounts
         report_file.get_tpmValues
         # get base name and write report to output directory
-        report_name = os.path.basename(path).split('.CDS.counts')[0]
+        report_name = os.path.basename(i).split('.CDS.counts')[0]
         report_file.make_sampleReport('{}/{}.REPORT' .format(args.results_dir, report_name))
-
-
 
     # remove intermediary files (unless told to keep)
     if not args.keep:
