@@ -286,7 +286,23 @@ def main():
 
     # run counts
     logging.info('**** RUNNING COUNTS ****')
-    mALIGN.run_countData(args, GFF_file, bam_files)
+    count_files = mALIGN.run_countData(args, GFF_file, bam_files)
+
+    # generate report
+    logging.info('**** GENERATING REPORT ****')
+    logging.info('setting up record . . .')
+    for i in count_files:
+        try:
+            report_file = mGFF.sampleReport(GFF_file.gff_filename, i)
+        except Exception, exception:
+            run_sendError(exception)
+        # load in feature counts, then generate TPM values
+        report_file.get_featureCounts
+        report_file.get_tpmValues
+        # get base name and write report to output directory
+        report_name = os.path.basename(path).split('.CDS.counts')[0]
+        report_file.make_sampleReport('{}/{}.REPORT' .format(args.results_dir, report_name))
+
 
 
     # remove intermediary files (unless told to keep)

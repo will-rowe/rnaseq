@@ -217,15 +217,16 @@ def run_covCheck(args, bam_files):
     # wait for bedtools subprocess to complete:
     exit_codes = [p.wait() for p in processes]
 
+    # check each output file to see if any target genes weren't covered
     bed_outputs = []
     for output_file in glob.glob('{}/*.bedtools_output' .format(alignment_dir)):
-            bed_outputs.append(output_file)
-            with open(output_file) as fh:
-                for line in fh:
-                    if float(line.split('\t')[8]) < 1.0:
-                        logging.warning(' * coverage less than 100% for {} in sample {}' .format(line.split('\t')[3], output_file))
-                        # don't delete the bed output file as we might want to investigate further
-                        bed_outputs.remove(output_file)
+        bed_outputs.append(output_file)
+        with open(output_file) as fh:
+            for line in fh:
+                if float(line.split('\t')[8]) < 1.0:
+                    logging.warning(' * coverage less than 100% for {} in sample {}' .format(line.split('\t')[3], output_file))
+                    # don't delete the bed output file as we might want to investigate further
+                    bed_outputs.remove(output_file)
 
     # remove intermediary files (unless told to keep)
     if not args.keep:
