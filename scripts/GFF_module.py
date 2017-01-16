@@ -205,7 +205,7 @@ class GFF_annotationFile:
         self.file_info.append('## file checks: original GFF file ({}) passed pipeline checks for formatting and content' .format(self.gff_filename))
 
 
-    def make_gffFile(self, output_filename):
+    def make_gffFile(self, output_filename, write_fasta=True):
         """
         create an output GFF file from a GFF_annotationFile object
         the original feature order should have been maintained thanks to the orderedDict BUT if we have added new features they will be at the end of the feature list regardless of start value
@@ -237,8 +237,9 @@ class GFF_annotationFile:
             gff_output_file.write('{}' .format('\n'.join(map(str, feature_list))))
 
             # write fasta to end of file (this will be unordered)
-            #for key in self.file_fasta_dict:
-            #    gff_output_file.write('\n>{}\n{}\n' .format(key, ''.join(map(str, self.file_fasta_dict[key]))))
+            if write_fasta == True:
+                for key in self.file_fasta_dict:
+                    gff_output_file.write('\n>{}\n{}\n' .format(key, ''.join(map(str, self.file_fasta_dict[key]))))
 
 
     def get_featureLength(self, attribute_query):

@@ -173,7 +173,7 @@ def run_pipelineSetup(args):
 
     # check required programs are installed
     logging.info('checking for required programs . . .')
-    program_list = ['parallel', 'bowtie2', 'fastqc', 'kraken', 'kraken-report', 'trimmomatic', 'samtools', 'multiqc', 'bammarkduplicates2', 'R', 'Rscript', 'bedtools', 'htseq-count']
+    program_list = ['parallel', 'bowtie2', 'fastqc', 'kraken', 'kraken-report', 'trimmomatic', 'samtools', 'multiqc', 'bammarkduplicates2', 'R', 'Rscript', 'bedtools']
     missing_programs = []
     for program in program_list:
         try:
@@ -201,7 +201,7 @@ def run_pipelineSetup(args):
     else:
         logging.info(' * keep off: intermediary files are removed')
 
-    # check reference file
+    # create GFF object from the user supplied file and check for proper GFF formatting etc.
     logging.info('checking reference . . .')
     logging.info(' * file: {}' .format(args.reference))
     try:
@@ -209,15 +209,17 @@ def run_pipelineSetup(args):
     except Exception, exception:
         run_sendError(exception)
 
-    # check the annotation formatting, write a new gff file in the tmp_dir and then update our GFF_file object to point to our newly saved version
-    checked_GFF_copy = '{}/reference_annotation.gff' .format(temp_dir)
-    GFF_file.make_gffFile(checked_GFF_copy)
-    GFF_file.gff_filename = checked_GFF_copy
-    # extract the fasta
+    # extract the fasta and save (for bowtie2 indexing)
+    GFF_file.run_gffCheck()
     logging.info(' * annotation file OK, extracting reference fasta')
     reference_fasta = '{}/reference_fasta.fa' .format(temp_dir)
     with open(reference_fasta, 'w') as fasta:
         fasta.write(GFF_file.get_fastaSeqs())
+
+    # write a new GFF file in the tmp_dir (without fasta for htseq compat.) and then update our GFF_file object to point to our newly saved version
+    checked_GFF_copy = '{}/reference_annotation.gff' .format(temp_dir)
+    GFF_file.make_gffFile(checked_GFF_copy, write_fasta=False)
+    GFF_file.gff_filename = checked_GFF_copy
 
     # setup the Bowtie2 index
     logging.info(' * creating bowtie2 index from reference fasta')
