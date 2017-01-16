@@ -16,18 +16,18 @@ logger = logging.getLogger(__name__)
 ####
 """ Alignment module
 
-this module maps the supplied fastq files to the bowtie2 reference
+this module:
+    maps the supplied fastq files to the bowtie2 reference
+    counts features using htseq-count
 """
 
 
 ####
 # Functions
 ####
-def run_alignData(args, sample_list, GFF_file):
+def run_alignData(args, sample_list):
     """ Function to run Bowtie2
     returns a filtered bam file (MAPQ > 10)
-
-    may not need GFF_file yet....
     """
     # set up alignment directory
     alignment_dir = '{}/ALIGNMENT' .format(args.results_dir)
@@ -89,3 +89,32 @@ def run_alignData(args, sample_list, GFF_file):
     exit_codes = [p.wait() for p in processes]
 
     return bam_files
+
+
+def run_countData(args, GFF_file, bam_files):
+    """ Function to run htseq-count
+    returns a ...
+    """
+    # set up counts directory
+    counts_dir = '{}/COUNTS' .format(args.results_dir)
+    try:
+        os.makedirs(counts_dir)
+    except Exception, e:
+        logging.error('**** PIPELINE ERROR ****')
+        logger.error('failed to create counts directory')
+        logger.error(e)
+        sys.exit(1)
+
+    # setup htseq-count cmd
+    logging.info(' * running htseq-count . . .')
+    htseq_cmd = 'htseq-count -f bam -t CDS -i ID -m intersection-nonempty -q {{}} {} > {}/{{/.}}.CDS.counts' .format(GFF_file, counts_dir)
+    parallel_htseq_cmd = 'printf \'{}\' | parallel -S {} --env PATH --workdir $PWD -j {} --delay 1.0 \'{}\'' .format('\\n'.join(bam_files), GLOBALS.SSH_list, GLOBALS.parallel_jobs, htseq_cmd)
+
+    # run subprocess
+    processes = []
+    with open('{}/htseq.errorlog' .format(counts_dir), 'a') as counts_log:
+        p1 = subprocess.Popen(parallel_htseq_cmd, shell=True, stderr=counts_log, stdout=counts_log)
+        processes.append(p1)
+
+    # wait for htseq-count subprocess to complete:
+    exit_codes = [p.wait() for p in processes]

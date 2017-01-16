@@ -57,6 +57,7 @@ bowtie2 == 2.2.9
 bammarkduplicates2 (biobaambam2) == 0.0.191
 R == 3.2.0
 bedtools == 2.26.0
+htseq-count == 0.6.1p1
 
 Python libraries    -   "multiqc == 0.9", "numpy == 1.7.0", "matplotlib == 1.5.3", "Jinja2 == 2.7.3", "MarkupSafe == 0.23", "multiqc == 0.8",
 R libraries         -   "dupRadar == 1.2.2", "Rsubread == 1.22.3"
@@ -175,7 +176,7 @@ def run_pipelineSetup(args):
 
     # check required programs are installed
     logging.info('checking for required programs . . .')
-    program_list = ['parallel', 'bowtie2', 'fastqc', 'kraken', 'kraken-report', 'trimmomatic', 'samtools', 'multiqc', 'bammarkduplicates2', 'R', 'Rscript', 'bedtools']
+    program_list = ['parallel', 'bowtie2', 'fastqc', 'kraken', 'kraken-report', 'trimmomatic', 'samtools', 'multiqc', 'bammarkduplicates2', 'R', 'Rscript', 'bedtools', 'htseq-count']
     missing_programs = []
     for program in program_list:
         try:
@@ -228,8 +229,8 @@ def run_pipelineSetup(args):
     except subprocess.CalledProcessError:
         run_sendError('can\'t run bowtie2-build command')
 
-    # return the checked GFF file
-    return GFF_file
+    # return the temp_dir and checked GFF file
+    return temp_dir, GFF_file
 
 
 def run_getInput(args):
@@ -261,7 +262,7 @@ def main():
     args = run_getArguments()
 
     # set up the pipeline
-    GFF_file = run_pipelineSetup(args)
+    temp_dir, GFF_file = run_pipelineSetup(args)
 
     # get input files
     logging.info('**** COLLECTING INPUT FILES ****')
@@ -273,17 +274,19 @@ def main():
 
     # align the samples to the reference genome
     logging.info('**** RUNNING ALIGNMENT ****')
-    bam_files = mALIGN.run_alignData(args, trimmed_files, GFF_file)
+    bam_files = mALIGN.run_alignData(args, trimmed_files)
 
     # run additional QC
     logging.info('**** RUNNING ADDITIONAL QC ****')
     logging.info('dupRadar PCR artefact check . . .')
-    mQC.run_dupRadar(bam_files, GFF_file, args)
+    mQC.run_dupRadar(args, GFF_file, bam_files)
     if args.covCheck_ref:
         logging.info('coverage check . . .')
-        mQC.run_covCheck(bam_files, args)
+        mQC.run_covCheck(args, bam_files)
 
-
+    # run counts
+    logging.info('**** RUNNING COUNTS ****')
+    mALIGN.run_countData(args, GFF_file, bam_files)
 
 
     # remove intermediary files (unless told to keep)

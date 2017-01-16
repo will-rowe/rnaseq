@@ -144,7 +144,7 @@ def run_initQC(args, sample_list):
     return trimmed_files
 
 
-def run_dupRadar(bam_files, GFF_file, args):
+def run_dupRadar(args, GFF_file, bam_files):
     """ Function to run dupRadar.R script
     currently there are no checks for the required R libraries (e.g. dupRadar, rsubread etc.)
     """
@@ -185,7 +185,7 @@ def run_dupRadar(bam_files, GFF_file, args):
         p1 = subprocess.Popen(parallel_dupRadar_cmd, shell=True, stderr=dupRadar_log, stdout=dupRadar_log)
         processes.append(p1)
 
-    # wait for bt2 subprocess to complete:
+    # wait for dupRadar subprocess to complete:
     exit_codes = [p.wait() for p in processes]
 
     # remove intermediary files (unless told to keep)
@@ -194,13 +194,14 @@ def run_dupRadar(bam_files, GFF_file, args):
             os.remove(i)
 
 
-
-
-### UP TO HERE!  the command below checks coverage for regions specified in the bed file.
-# see: http://bedtools.readthedocs.io/en/latest/content/tools/coverage.html
-# also: https://wikis.utexas.edu/display/CoreNGSTools/Bedtools%3A+Analyzing+your+aligned+experiment
-
-def run_covCheck(bam_files, args):
+def run_covCheck(args, bam_files):
+    """ Function to check coverage of gene subset
+    this is an experimental function to add an extra bit of QC to the pipeline
+    the idea is to check that genes we expect to be expressed are fully covered in the RNA-seq data from each sample
+    this requires a list of genes (in bed format) for our reference + bedtools coverage
+    # see: http://bedtools.readthedocs.io/en/latest/content/tools/coverage.html
+    # also: https://wikis.utexas.edu/display/CoreNGSTools/Bedtools%3A+Analyzing+your+aligned+experiment
+    """
     # setup bedtools cmd
     logging.info(' * running bedtools . . .')
     alignment_dir = '{}/ALIGNMENT' .format(args.results_dir)
@@ -213,7 +214,7 @@ def run_covCheck(bam_files, args):
         p1 = subprocess.Popen(parallel_bedtools_cmd, shell=True, stderr=bedtools_log, stdout=bedtools_log)
         processes.append(p1)
 
-    # wait for bt2 subprocess to complete:
+    # wait for bedtools subprocess to complete:
     exit_codes = [p.wait() for p in processes]
 
     bed_outputs = []
@@ -222,13 +223,11 @@ def run_covCheck(bam_files, args):
             with open(output_file) as fh:
                 for line in fh:
                     if float(line.split('\t')[8]) < 1.0:
-                        logging.warning(' * coverage less than 100\% for {} in sample {}.' .format(line.split('\t')[3], output_file))
-                    else:
-                        logging.info(' * coverage == 100\% for {} in sample {}.' .format(line.split('\t')[3], output_file))
-
+                        logging.warning(' * coverage less than 100% for {} in sample {}' .format(line.split('\t')[3], output_file))
+                        # don't delete the bed output file as we might want to investigate further
+                        bed_outputs.remove(output_file)
 
     # remove intermediary files (unless told to keep)
-    #if not args.keep:
-    #    for i in rmdup_bam_files:
-    #        os.remove(i)
-    #bedtools coverage -a D23580.regions.bed -b 6_21-D23_NO_2_RC_151203_L004_R1.fastq.trimmed.sorted.bam > coverage.bed
+    if not args.keep:
+        for i in bed_outputs:
+            os.remove(i)
