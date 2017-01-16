@@ -56,6 +56,7 @@ samtools == 1.3.1
 bowtie2 == 2.2.9
 bammarkduplicates2 (biobaambam2) == 0.0.191
 R == 3.2.0
+bedtools == 2.26.0
 
 Python libraries    -   "multiqc == 0.9", "numpy == 1.7.0", "matplotlib == 1.5.3", "Jinja2 == 2.7.3", "MarkupSafe == 0.23", "multiqc == 0.8",
 R libraries         -   "dupRadar == 1.2.2", "Rsubread == 1.22.3"
@@ -122,14 +123,14 @@ def run_getArguments():
     # set up optional arguments
     parser.add_argument('-o', '--outdir', default = './hinton-rnaseq-{}' .format(time.strftime('%H%M%S')), dest = 'results_dir',
         help = 'specify the directory to put the results files (default = ./hinton-rnaseq-xxxx)')
+    parser.add_argument('-c', '--covCheck', dest = 'covCheck_ref',
+        help = 'list of genes to check for coverage (in .bed format)')
     parser.add_argument('-l', '--logfile', default = './log.txt', dest = 'log_file',
         help = 'specify the name of the log file')
-    parser.add_argument('-t', '--threads', default = '10', dest = 'threads',
+    parser.add_argument('-t', '--threads', default = '1', dest = 'threads',
         help = 'specify the number of threads to use in the multithreading steps (default = 1)')
     parser.add_argument('-k', '--keep-files', action = 'store_true', dest = 'keep',
         help = 'keep intermediary files (e.g. duplication marked bams)', default = False)
-    parser.add_argument('-c', '--checks', action = 'store_true', dest = 'checks',
-        help = 'run setup checks (checks annotation is GFF3 formatted, bowtie2 indices are present etc.)', default = True)
 
     # parse the arguments and return them
     args = parser.parse_args()
@@ -171,11 +172,10 @@ def run_pipelineSetup(args):
     logger = run_getLogger(args)
     logging.info('RNA-seq pipeline started by: {}' .format(user))
     logging.info('**** SETTING UP PIPELINE ****')
-    logging.info('threads for parallel steps: {}' .format(args.threads))
 
     # check required programs are installed
     logging.info('checking for required programs . . .')
-    program_list = ['parallel', 'bowtie2', 'fastqc', 'kraken', 'kraken-report', 'trimmomatic', 'samtools', 'multiqc', 'bammarkduplicates2', 'R', 'Rscript']
+    program_list = ['parallel', 'bowtie2', 'fastqc', 'kraken', 'kraken-report', 'trimmomatic', 'samtools', 'multiqc', 'bammarkduplicates2', 'R', 'Rscript', 'bedtools']
     missing_programs = []
     for program in program_list:
         try:
@@ -188,8 +188,24 @@ def run_pipelineSetup(args):
         logging.error(' * can\'t find: {}' .format(','.join(missing_programs)))
         run_sendError('required programs not installed')
 
-    # read the supplied annotation file
-    logging.info('checking the input annotation file . . .')
+    # check command line arguments
+    logging.info('checking CL arguments . . .')
+    logging.info(' * input file list: {}' .format(args.file_list))
+    logging.info(' * results directory: {}' .format(args.results_dir))
+    if args.covCheck_ref:
+        logging.info(' * file for coverage check: {}' .format(args.covCheck_ref))
+    else:
+        logging.info(' * coverage checks not requested')
+    logging.info(' * log file: {}' .format(args.log_file))
+    logging.info(' * threads for parallel steps: {}' .format(args.threads))
+    if args.keep:
+        logging.info(' * keep on: intermediary files are kept')
+    else:
+        logging.info(' * keep off: intermediary files are removed')
+
+    # check reference file
+    logging.info('checking reference . . .')
+    logging.info(' * file: {}' .format(args.reference))
     try:
         GFF_file = mGFF.GFF_annotationFile(args.reference)
     except Exception, exception:
@@ -200,13 +216,13 @@ def run_pipelineSetup(args):
     GFF_file.make_gffFile(checked_GFF_copy)
     GFF_file.gff_filename = checked_GFF_copy
     # extract the fasta
-    logging.info('annotation file OK, extracting reference fasta . . .')
+    logging.info(' * annotation file OK, extracting reference fasta')
     reference_fasta = '{}/reference_fasta.fa' .format(temp_dir)
     with open(reference_fasta, 'w') as fasta:
         fasta.write(GFF_file.get_fastaSeqs())
 
     # setup the Bowtie2 index
-    logging.info('creating bowtie2 index from reference fasta . . .')
+    logging.info(' * creating bowtie2 index from reference fasta')
     try:
         bowtie2_build = subprocess.check_output(['bowtie2-build', reference_fasta, reference_fasta], stderr=open('/dev/null', 'w'))
     except subprocess.CalledProcessError:
@@ -259,17 +275,24 @@ def main():
     logging.info('**** RUNNING ALIGNMENT ****')
     bam_files = mALIGN.run_alignData(args, trimmed_files, GFF_file)
 
-    # run dupRadar
+    # run additional QC
     logging.info('**** RUNNING ADDITIONAL QC ****')
+    logging.info('dupRadar PCR artefact check . . .')
     mQC.run_dupRadar(bam_files, GFF_file, args)
+    if args.covCheck_ref:
+        logging.info('coverage check . . .')
+        mQC.run_covCheck(bam_files, args)
 
 
 
+
+    # remove intermediary files (unless told to keep)
+    if not args.keep:
+        shutil.rmtree(temp_dir)
 
     # report pipeline finished and exit
     logging.info('**** FINISHED ****')
     logging.info("pipeline completed successfully")
-    #shutil.rmtree(temp_dir)
     sys.exit(1)
 
 

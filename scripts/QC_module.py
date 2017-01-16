@@ -156,7 +156,7 @@ def run_dupRadar(bam_files, GFF_file, args):
         run_sendError(e)
 
     # mark duplicates
-    logging.info('now running biobambam2/bammarkduplicates2 . . .')
+    logging.info(' * running biobambam2/bammarkduplicates2 . . .')
     biobambam_cmd = 'bammarkduplicates2 I={{}} O={}/{{/.}}.markeddup.bam' .format(dupRadar_dir)
     parallel_biobambam_cmd = 'printf \'{}\' | parallel -S {} --env PATH --workdir $PWD -j {} --delay 1.0 \'{}\'' .format('\\n'.join(bam_files), GLOBALS.SSH_list, GLOBALS.parallel_jobs, biobambam_cmd)
 
@@ -174,8 +174,8 @@ def run_dupRadar(bam_files, GFF_file, args):
     for bam_file in glob.glob('{}/*.markeddup.bam' .format(dupRadar_dir)):
             rmdup_bam_files.append(bam_file)
 
-    # run dupRadar
-    logging.info('now running dupRadar . . .')
+    # setup dupRadar cmd
+    logging.info(' * running dupRadar . . .')
     dupRadar_cmd = 'dupRadar.sh {{}} {} stranded=yes paired=no outdir={} threads={}' .format(GFF_file.gff_filename, dupRadar_dir, str(args.threads))
     parallel_dupRadar_cmd = 'printf \'{}\' | parallel -S {} --env PATH --workdir $PWD -j {} --delay 1.0 \'{}\'' .format('\\n'.join(rmdup_bam_files), GLOBALS.SSH_list, GLOBALS.parallel_jobs, dupRadar_cmd)
 
@@ -192,3 +192,32 @@ def run_dupRadar(bam_files, GFF_file, args):
     if not args.keep:
         for i in rmdup_bam_files:
             os.remove(i)
+
+
+
+
+### UP TO HERE!  the command below checks coverage for regions specified in the bed file.
+# see: http://bedtools.readthedocs.io/en/latest/content/tools/coverage.html
+# also: https://wikis.utexas.edu/display/CoreNGSTools/Bedtools%3A+Analyzing+your+aligned+experiment
+
+def run_covCheck(bam_files, args):
+    # setup bedtools cmd
+    logging.info(' * running bedtools . . .')
+    alignment_dir = '{}/ALIGNMENT' .format(args.results_dir)
+    bedtools_cmd = 'bedtools coverage -a {} -b {{}} > {}/{{/.}}.bedtools_output' .format(args.covCheck_ref, alignment_dir)
+    parallel_bedtools_cmd = 'printf \'{}\' | parallel -S {} --env PATH --workdir $PWD -j {} --delay 1.0 \'{}\'' .format('\\n'.join(rmdup_bam_files), GLOBALS.SSH_list, GLOBALS.parallel_jobs, bedtools_cmd)
+
+    # run subprocess
+    processes = []
+    with open('{}/bedtools.errorlog' .format(alignment_dir), 'a') as bedtools_log:
+        p1 = subprocess.Popen(parallel_bedtools_cmd, shell=True, stderr=bedtools_log, stdout=bedtools_log)
+        processes.append(p1)
+
+    # wait for bt2 subprocess to complete:
+    exit_codes = [p.wait() for p in processes]
+
+    # remove intermediary files (unless told to keep)
+    #if not args.keep:
+    #    for i in rmdup_bam_files:
+    #        os.remove(i)
+    #bedtools coverage -a D23580.regions.bed -b 6_21-D23_NO_2_RC_151203_L004_R1.fastq.trimmed.sorted.bam > coverage.bed

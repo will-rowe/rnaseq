@@ -9,19 +9,19 @@ from setuptools import setup
 
 setup(
     name = "rnaseq",
+    version = '0.1.0',
     packages = ["rnaseq"],
+    author = 'Will Rowe',
+    author_email = 'will.rowe@liverpool.ac.uk',
+    url = 'http://will-rowe.github.io/',
+    description = 'RNA-seq analysis pipeline for the Hinton Lab, Liverpool, UK',
+    long_description = open('README.md').read(),
     package_dir = {'rnaseq': 'scripts'},
     scripts = ['scripts/dupRadar.sh'
     ],
     entry_points = {
         "console_scripts": ['rnaseq = rnaseq.rnaseq:main']
         },
-    version = '0.1.0',
-    description = 'RNA-seq analysis pipeline for the Hinton Lab, Liverpool, UK',
-    long_description = open('README.md').read(),
-    author = 'Will Rowe',
-    author_email = 'will.rowe@liverpool.ac.uk',
-    url = 'http://will-rowe.github.io/',
     license = 'license.txt',
     install_requires = [
         "numpy == 1.7.0",
