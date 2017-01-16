@@ -6,7 +6,7 @@ This is the repo for the Hinton Lab RNA-seq pipeline
 
 ## General updates
 
-This repo only contains the pipeline wrapper and the QC / GFF modules - more to follow once testing is complete
+This pipeline is still under active development --- extensive readme and tests to follow
 
 
 ## Contact
@@ -24,13 +24,22 @@ This repo only contains the pipeline wrapper and the QC / GFF modules - more to 
 
 `git clone https://github.com/will-rowe/rnaseq && cd rnaseq`
 
-2. Edit `./scripts/GLOBALS.py` to edit setup variables
 
-3. Edit `./scripts/dupRadar.sh` if needed
+2. Edit GLOBALS.py file to edit setup variables
+
+`vim ./scripts/GLOBALS.py`
+
+
+3. Edit dupRadar script if needed
+
+`vim ./scripts/dupRadar.sh`
+
 
 4. Run the setup.py
 
+
 `python setup.py install --user`
+
 
 5. Call the program
 
