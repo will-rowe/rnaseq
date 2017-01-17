@@ -292,7 +292,7 @@ def main():
     logging.info('setting up record . . .')
     for i in count_files:
         try:
-            report_file = mGFF.sampleReport(GFF_file.gff_filename, i)
+            report_file = mGFF.sampleReport(args.reference, i)
         except Exception, exception:
             run_sendError(exception)
         # load in feature counts, then generate TPM values
