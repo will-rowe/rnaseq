@@ -35,7 +35,7 @@ creating unified report document for counts / TPMs
 
 Notes and caveats:
 
-only works on single end illumina data
+only works on single end, stranded, illumina data
 the pipeline checks for required programs but does not check for correct version numbers...
 only checks file name extensions - could add more stringent fastq checks
 adapter removal hasn't been implemented yet
@@ -54,7 +54,7 @@ bowtie2 == 2.2.9
 bammarkduplicates2 (biobaambam2) == 0.0.191
 R == 3.2.0
 bedtools == 2.26.0
-htseq-count == 0.6.1p1
+featureCounts == 1.5.1
 
 Python libraries    -   "multiqc == 0.9", "numpy == 1.7.0", "matplotlib == 1.5.3", "Jinja2 == 2.7.3", "MarkupSafe == 0.23", "multiqc == 0.8",
 R libraries         -   "dupRadar == 1.2.2", "Rsubread == 1.22.3"
@@ -173,7 +173,7 @@ def run_pipelineSetup(args):
 
     # check required programs are installed
     logging.info('checking for required programs . . .')
-    program_list = ['parallel', 'bowtie2', 'fastqc', 'kraken', 'kraken-report', 'trimmomatic', 'samtools', 'multiqc', 'bammarkduplicates2', 'R', 'Rscript', 'bedtools']
+    program_list = ['parallel', 'bowtie2', 'fastqc', 'kraken', 'kraken-report', 'trimmomatic', 'samtools', 'multiqc', 'bammarkduplicates2', 'R', 'Rscript', 'bedtools', 'featureCounts']
     missing_programs = []
     for program in program_list:
         try:

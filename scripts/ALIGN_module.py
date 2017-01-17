@@ -92,7 +92,7 @@ def run_alignData(args, sample_list):
 
 
 def run_countData(args, GFF_file, bam_files):
-    """ Function to run htseq-count
+    """ Function to run featureCounts
     returns a ...
     """
     # set up counts directory
@@ -107,7 +107,9 @@ def run_countData(args, GFF_file, bam_files):
 
     # setup htseq-count cmd
     logging.info(' * running htseq-count . . .')
-    htseq_cmd = 'htseq-count --format bam --type CDS --idattr ID --mode intersection-nonempty --quiet {{}} {} > {}/{{/.}}.CDS.counts' .format(GFF_file.gff_filename, counts_dir)
+
+    # t = feature type, g = attribute type, O = allow multioverlap, s = stand specific, T = threads, a = annotation, o = output dir
+    htseq_cmd = 'featureCounts -t CDS -g ID -O -s 1 -T {} -a {} -o {}/{{/.}}.CDS.counts {{}}' .format(args.threads, GFF_file.gff_filename, counts_dir)
     parallel_htseq_cmd = 'printf \'{}\' | parallel -S {} --env PATH --workdir $PWD -j {} --delay 1.0 \'{}\'' .format('\\n'.join(bam_files), GLOBALS.SSH_list, GLOBALS.parallel_jobs, htseq_cmd)
 
     # run subprocess
