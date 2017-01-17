@@ -306,7 +306,6 @@ class sampleReport(GFF_annotationFile):
                         continue
                     entry = line.rstrip('\n').split('\t')
                     if not len(entry) == 7:
-                        print line
                         continue
                     try:
                         feature, count = entry[0], int(entry[6])
@@ -315,7 +314,6 @@ class sampleReport(GFF_annotationFile):
                         self.reportError()
                     if feature not in self.count_values_dict.keys() and feature in self.file_features_dict.keys():
                         self.count_values_dict[feature] = count
-                        print ('works\n')
                     elif feature not in self.file_features_dict.keys():
                         self.file_errors_dict[line] = 'feature in count file is NOT present in the reference GFF . . .'
                         self.reportError()
@@ -357,11 +355,11 @@ class sampleReport(GFF_annotationFile):
 
         # calculate the sum of all rates for the sample
         sum_of_rates = 0
-        for feature in self.file_features_dict.keys():
+        for feature in self.count_values_dict.keys():
             sum_of_rates += float(self.count_values_dict[feature]) / float(self.get_featureLength(feature))
 
         # calculate TPM value per feature
-        for feature in self.file_features_dict.keys():
+        for feature in self.count_values_dict.keys():
             tpm_value = (float(self.count_values_dict[feature]) / float(self.get_featureLength(feature))) * (1.0 / sum_of_rates) * (10**6)
             self.tpm_values_dict[feature] = tpm_value
 
