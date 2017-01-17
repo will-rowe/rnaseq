@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 this module:
     maps the supplied fastq files to the bowtie2 reference
-    counts features using htseq-count
+    counts features using featureCounts
 """
 
 
@@ -92,7 +92,7 @@ def run_alignData(args, sample_list):
 
 
 def run_countData(args, GFF_file, bam_files):
-    """ Function to run featureCounts
+    """ Function to run featureCountss
     returns a ...
     """
     # set up counts directory
@@ -105,20 +105,19 @@ def run_countData(args, GFF_file, bam_files):
         logger.error(e)
         sys.exit(1)
 
-    # setup htseq-count cmd
-    logging.info(' * running htseq-count . . .')
-
+    # setup featureCounts cmd
+    logging.info(' * running featureCounts . . .')
     # t = feature type, g = attribute type, O = allow multioverlap, s = stand specific, T = threads, a = annotation, o = output dir
-    htseq_cmd = 'featureCounts -t CDS -g ID -O -s 1 -T {} -a {} -o {}/{{/.}}.CDS.counts {{}}' .format(args.threads, GFF_file.gff_filename, counts_dir)
-    parallel_htseq_cmd = 'printf \'{}\' | parallel -S {} --env PATH --workdir $PWD -j {} --delay 1.0 \'{}\'' .format('\\n'.join(bam_files), GLOBALS.SSH_list, GLOBALS.parallel_jobs, htseq_cmd)
+    featureCounts_cmd = 'featureCounts -t CDS -g ID -O -s 1 -T {} -a {} -o {}/{{/.}}.CDS.counts {{}}' .format(str(args.threads), GFF_file.gff_filename, counts_dir)
+    parallel_featureCounts_cmd = 'printf \'{}\' | parallel -S {} --env PATH --workdir $PWD -j {} --delay 1.0 \'{}\'' .format('\\n'.join(bam_files), GLOBALS.SSH_list, GLOBALS.parallel_jobs, featureCounts_cmd)
 
     # run subprocess
     processes = []
-    with open('{}/htseq.errorlog' .format(counts_dir), 'a') as counts_log:
-        p1 = subprocess.Popen(parallel_htseq_cmd, shell=True, stderr=counts_log, stdout=counts_log)
+    with open('{}/featureCounts.errorlog' .format(counts_dir), 'a') as counts_log:
+        p1 = subprocess.Popen(parallel_featureCounts_cmd, shell=True, stderr=counts_log, stdout=counts_log)
         processes.append(p1)
 
-    # wait for htseq-count subprocess to complete:
+    # wait for featureCounts subprocess to complete:
     exit_codes = [p.wait() for p in processes]
 
     # return list of count files
