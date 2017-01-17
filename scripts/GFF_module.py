@@ -296,15 +296,30 @@ class sampleReport(GFF_annotationFile):
 
     	# open the count file and IF feature in our annotation, add each count to the self.count_values_dict using the feature name as the key
         with openFunc(self.count_data_file) as counts:
-            for line in counts:
-                line = line.split("\t")
-                if fileformat == 'featureCounts':
+            if fileformat == 'featureCounts':
+                for line in counts:
+                    line = line.split("\t")
+                    if not len(line) == 6:
+                        continue
                     try:
                         feature, count = line[0], int(line[6])
                     except:
                         self.file_errors_dict[line] = 'can\'t process count data file - is it featureCounts output?'
                         self.reportError()
-                elif fileformat == 'htseq':
+                    if feature not in self.count_values_dict.keys() and feature in self.file_features_dict.keys():
+                        self.count_values_dict[feature] = count
+                    elif feature not in self.file_features_dict.keys():
+                        self.file_errors_dict[line] = 'feature in count file is NOT present in the reference GFF . . .'
+                        self.reportError()
+                    else:
+                        self.file_errors_dict[line] = 'can\'t process count data file - possible duplicate or formatting issue'
+                        self.reportError()
+            elif fileformat == 'htseq':
+                for line in counts:
+                    # don't include extra information from htseq (eg. __no_feature) in the count dictionary
+                    if feature.startswith("__"):
+                        continue
+                    line = line.split("\t")
                     try:
                         feature, count = line[0], int(line[1])
                     except:
@@ -313,9 +328,7 @@ class sampleReport(GFF_annotationFile):
                 else:
                     self.file_errors_dict[line] = 'can\'t process count data file - format not supported'
                     self.reportError()
-                # don't include extra information from htseq (eg. __no_feature) in the count dictionary
-                if feature.startswith("__"):
-                    continue
+
                 if feature not in self.count_values_dict.keys() and feature in self.file_features_dict.keys():
                     self.count_values_dict[feature] = count
                 elif feature not in self.file_features_dict.keys():
