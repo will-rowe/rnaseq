@@ -120,8 +120,23 @@ def run_countData(args, GFF_file, bam_files):
     # wait for featureCounts subprocess to complete:
     exit_codes = [p.wait() for p in processes]
 
+    # repeat for ncRNA
+    featureCounts_cmd = 'featureCounts -t ncRNA -g ID -O -s 1 -T {} -a {} -o {}/{{/.}}.ncRNA.counts {{}}' .format(str(args.threads), GFF_file.gff_filename, counts_dir)
+    parallel_featureCounts_cmd = 'printf \'{}\' | parallel -S {} --env PATH --workdir $PWD -j {} --delay 1.0 \'{}\'' .format('\\n'.join(bam_files), GLOBALS.SSH_list, GLOBALS.parallel_jobs, featureCounts_cmd)
+
+    # run subprocess
+    processes = []
+    with open('{}/featureCounts.errorlog' .format(counts_dir), 'a') as counts_log:
+        p1 = subprocess.Popen(parallel_featureCounts_cmd, shell=True, stderr=counts_log, stdout=counts_log)
+        processes.append(p1)
+
+    # wait for featureCounts subprocess to complete:
+    exit_codes = [p.wait() for p in processes]
+
     # return list of count files
-    count_files = []
+    CDS_count_files, ncRNA_count_files = [], []
     for count_file in glob.glob('{}/*.CDS.counts' .format(counts_dir)):
         count_files.append(count_file)
-    return count_files
+    for count_file in glob.glob('{}/*.ncRNA.counts' .format(counts_dir)):
+        count_files.append(count_file)
+    return CDS_count_files, ncRNA_count_files

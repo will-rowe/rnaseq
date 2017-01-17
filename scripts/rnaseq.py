@@ -285,19 +285,24 @@ def main():
 
     # run counts
     logging.info('**** RUNNING COUNTS ****')
-    count_files = mALIGN.run_countData(args, GFF_file, bam_files)
+    CDS_count_files, ncRNA_count_files = mALIGN.run_countData(args, GFF_file, bam_files)
 
-    # generate reports
+    # generate reports for each sample
     logging.info('**** GENERATING REPORT ****')
     logging.info('setting up record . . .')
-    for i in count_files:
+    for i in CDS_count_files:
         try:
             report_file = mGFF.sampleReport(args.reference, i)
         except Exception, exception:
             run_sendError(exception)
-        # load in feature counts, then generate TPM values
-        report_file.get_featureCounts
-        report_file.get_tpmValues
+        # load in feature counts for CDS features
+        report_file.get_featureCounts()
+        # load in feature counts for ncRNA features
+        ncRNA_count_file = '{}.ncRNA.counts' .format(i.split('.CDS.counts')[0])
+        report_file.count_data_file = ncRNA_count_file
+        report_file.get_featureCounts()
+        # generate TPM values
+        report_file.get_tpmValues()
         # get base name and write report to output directory
         report_name = os.path.basename(i).split('.CDS.counts')[0]
         report_file.make_sampleReport('{}/{}.REPORT' .format(args.results_dir, report_name))
