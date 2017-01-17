@@ -375,7 +375,7 @@ class sampleReport(GFF_annotationFile):
 
         # format the object so it's ready for writing
         feature_list = []
-        for key in self.file_features_dict:
+        for key in self.count_values_dict:
             feature_line = '{}\t{}\t{}\t{}\t{}' .format(key, self.file_features_dict[key][3], self.file_features_dict[key][4], self.count_values_dict[key], self.tpm_values_dict[key])
             feature_list.append(feature_line)
 
