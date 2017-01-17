@@ -297,17 +297,25 @@ class sampleReport(GFF_annotationFile):
     	# open the count file and IF feature in our annotation, add each count to the self.count_values_dict using the feature name as the key
         with openFunc(self.count_data_file) as counts:
             if fileformat == 'featureCounts':
+                print ('feature count format\n')
                 for line in counts:
-                    line = line.split("\t")
-                    if not len(line) == 6:
+                    # ignore comments/headers
+                    if line.startswith('#'):
+                        continue
+                    if line.startswith('Geneid'):
+                        continue
+                    entry = line.rstrip('\n').split('\t')
+                    if not len(entry) == 7:
+                        print line
                         continue
                     try:
-                        feature, count = line[0], int(line[6])
+                        feature, count = entry[0], int(entry[6])
                     except:
                         self.file_errors_dict[line] = 'can\'t process count data file - is it featureCounts output?'
                         self.reportError()
                     if feature not in self.count_values_dict.keys() and feature in self.file_features_dict.keys():
                         self.count_values_dict[feature] = count
+                        print ('works\n')
                     elif feature not in self.file_features_dict.keys():
                         self.file_errors_dict[line] = 'feature in count file is NOT present in the reference GFF . . .'
                         self.reportError()
