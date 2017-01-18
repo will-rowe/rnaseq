@@ -297,7 +297,6 @@ class sampleReport(GFF_annotationFile):
     	# open the count file and IF feature in our annotation, add each count to the self.count_values_dict using the feature name as the key
         with openFunc(self.count_data_file) as counts:
             if fileformat == 'featureCounts':
-                print ('feature count format\n')
                 for line in counts:
                     # ignore comments/headers
                     if line.startswith('#'):

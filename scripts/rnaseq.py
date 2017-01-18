@@ -32,6 +32,7 @@ Currently working on:
 need to raise some flags if dupRadar picks up possible PCR artefacts
 create tests
 creating unified report document for counts / TPMs
+add in description for each feature in sample reports
 
 Notes and caveats:
 

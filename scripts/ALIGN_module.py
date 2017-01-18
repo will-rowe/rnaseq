@@ -136,7 +136,7 @@ def run_countData(args, GFF_file, bam_files):
     # return list of count files
     CDS_count_files, ncRNA_count_files = [], []
     for count_file in glob.glob('{}/*.CDS.counts' .format(counts_dir)):
-        count_files.append(count_file)
+        CDS_count_files.append(count_file)
     for count_file in glob.glob('{}/*.ncRNA.counts' .format(counts_dir)):
-        count_files.append(count_file)
+        ncRNA_count_files.append(count_file)
     return CDS_count_files, ncRNA_count_files
