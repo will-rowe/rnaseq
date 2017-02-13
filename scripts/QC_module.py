@@ -114,7 +114,7 @@ def run_initQC(args, sample_list):
     # trimmomatic
     trimmomatic_dir = '{}/trimmomatic_data' .format(QC_dir)
     os.makedirs(trimmomatic_dir)
-    trim_cmd = 'trimmomatic SE -threads {} {{}} {}/{{/.}}.trimmed.fq SLIDINGWINDOW:4:20 MINLEN:{} &> {}/{{/.}}-trimmomatic.log' .format(str(args.threads), trimmomatic_dir, GLOBALS.trimmomatic_min_length, trimmomatic_dir)
+    trim_cmd = 'trimmomatic SE -threads {} {{}} {}/{{/.}}.trimmed.fq ILLUMINACLIP:{}:2:30:10 SLIDINGWINDOW:4:20 MINLEN:{} &> {}/{{/.}}-trimmomatic.log' .format(str(args.threads), trimmomatic_dir, GLOBALS.adapter_file, GLOBALS.trimmomatic_min_length, trimmomatic_dir)
     parallel_trim_cmd = 'printf \'{}\' | parallel --env PATH --workdir $PWD -j {} --delay 1.0 \'{}\'' .format('\\n'.join(sample_list), GLOBALS.parallel_jobs, trim_cmd)
 
     # run subprocess

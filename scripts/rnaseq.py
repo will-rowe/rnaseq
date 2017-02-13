@@ -120,8 +120,8 @@ def run_getArguments():
         help = 'list of samples to be processed (newline separated, fastq files)')
 
     # set up optional arguments
-    parser.add_argument('-o', '--outdir', default = './hinton-rnaseq-{}' .format(time.strftime('%H%M%S')), dest = 'results_dir',
-        help = 'specify the directory to put the results files (default = ./hinton-rnaseq-xxxx)')
+    parser.add_argument('-o', '--outdir', default = './rnaseq-pipeline-{}' .format(time.strftime('%H%M%S')), dest = 'results_dir',
+        help = 'specify the directory to put the results files (default = ./rnaseq-pipeline-xxxx)')
     parser.add_argument('-c', '--covCheck', dest = 'covCheck_ref',
         help = 'list of genes to check for coverage (in .bed format)')
     parser.add_argument('-l', '--logfile', default = './log.txt', dest = 'log_file',
