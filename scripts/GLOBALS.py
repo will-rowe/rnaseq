@@ -17,7 +17,6 @@ this file contains global variables for the Hinton Lab RNA-seq pipeline, such as
 ####
 # GNU Parallel settings
 #SSH_list = 'ada04,ada05,ada06,ada07,ada08,ada09,ada10,ada11'
-SSH_list = 'willrowe@127.0.0.1'
 parallel_jobs = '1'
 
 # Settings for QC

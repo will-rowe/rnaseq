@@ -12,7 +12,7 @@ This pipeline is still under active development --- extensive readme and tests t
 ## Contact
 ### Will Rowe
 
-* Website: [Will Rowe](https://github.com/will-rowe)
+* Website: [Will Rowe](https://will-rowe.github.io)
 * Lab website: [hintonlab.com](http://www.hintonlab.com)
 * Email: [Will Rowe @ Liverpool](will.rowe@liverpool.ac.uk)
 

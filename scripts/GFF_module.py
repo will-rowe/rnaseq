@@ -148,6 +148,7 @@ class GFF_annotationFile:
             attribute_ID = attributes_dictionary["ID"]
         elif not "ID" in attributes_dictionary.keys():
             attributes_dictionary["ID"] = 'no_value'
+            attribute_ID = attributes_dictionary["ID"]
         if not "Name" in attributes_dictionary.keys():
             attributes_dictionary["Name"] = 'no_value'
         if not "Alias" in attributes_dictionary.keys():

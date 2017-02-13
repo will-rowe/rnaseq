@@ -40,7 +40,7 @@ only works on single end, stranded, illumina data
 the pipeline checks for required programs but does not check for correct version numbers...
 only checks file name extensions - could add more stringent fastq checks
 adapter removal hasn't been implemented yet
-
+supplied GFF file must contain 1. CDS and ncRNA features 2. fasta sequence 3. unique ID for each feature
 
 Dependencies:
 
