@@ -109,7 +109,7 @@ class GFF_annotationFile:
                 # read fasta entires (doesn't account for N's etc. at start of fasta sequence)
                 elif line.startswith('>'):
                     fastaHeader = line[1:]
-                elif line.upper().startswith(('A','T','C','G')) and fastaHeader:
+                elif line.upper().startswith(('A','T','C','G','N')) and fastaHeader:
                     if fastaHeader in self.file_fasta_dict.keys():
                         self.file_fasta_dict[fastaHeader].append(line)
                     else:
