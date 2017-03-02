@@ -19,6 +19,12 @@ This pipeline is still under active development --- extensive readme and tests t
 
 ## Installation
 
+Optional - We use Anaconda to manage pipeline dependencies:
+
+`conda create -n python2 python=2.7 anaconda`
+
+`source activate python2`
+
 1. Download the repo
 
 `git clone https://github.com/will-rowe/rnaseq && cd rnaseq`

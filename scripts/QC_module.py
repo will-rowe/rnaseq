@@ -73,13 +73,13 @@ def run_initQC(args, sample_list):
     initial_FASTQC_dir = '{}/initial_FASTQC_results' .format(QC_dir)
     os.makedirs(initial_FASTQC_dir)
     fastqc_cmd = 'fastqc --threads {} --quiet --outdir {} {{}}' .format(str(half_threads), initial_FASTQC_dir)
-    parallel_fastq_cmd = 'printf \'{}\' | parallel --env PATH --workdir $PWD -j {} --delay 1.0 \'{}\'' .format('\\n'.join(sample_list), GLOBALS.parallel_jobs, fastqc_cmd)
+    parallel_fastq_cmd = 'printf \'{}\' | parallel --gnu -j {} --delay 1.0 \'{}\'' .format('\\n'.join(sample_list), GLOBALS.parallel_jobs, fastqc_cmd)
 
     # initial kraken screen
     initial_KRAKEN_dir = '{}/initial_KRAKEN_results' .format(QC_dir)
     os.makedirs(initial_KRAKEN_dir)
     kraken_cmd = 'kraken --threads {} --preload --fastq-input --gzip-compressed --db {} {{}} | kraken-report --db {} > {}/{{/.}}-krakenreport.txt' .format(str(half_threads), GLOBALS.kraken_db, GLOBALS.kraken_db, initial_KRAKEN_dir)
-    parallel_kraken_cmd = 'printf \'{}\' | parallel --env PATH --workdir $PWD -j {} --delay 1.0 \'{}\'' .format('\\n'.join(sample_list), GLOBALS.parallel_jobs, kraken_cmd)
+    parallel_kraken_cmd = 'printf \'{}\' | parallel --gnu -j {} --delay 1.0 \'{}\'' .format('\\n'.join(sample_list), GLOBALS.parallel_jobs, kraken_cmd)
 
     # run subprocesses
     processes = []
@@ -115,7 +115,7 @@ def run_initQC(args, sample_list):
     trimmomatic_dir = '{}/trimmomatic_data' .format(QC_dir)
     os.makedirs(trimmomatic_dir)
     trim_cmd = 'trimmomatic SE -threads {} {{}} {}/{{/.}}.trimmed.fq ILLUMINACLIP:{}:2:30:10 SLIDINGWINDOW:4:20 MINLEN:{} &> {}/{{/.}}-trimmomatic.log' .format(str(args.threads), trimmomatic_dir, GLOBALS.adapter_file, GLOBALS.trimmomatic_min_length, trimmomatic_dir)
-    parallel_trim_cmd = 'printf \'{}\' | parallel --env PATH --workdir $PWD -j {} --delay 1.0 \'{}\'' .format('\\n'.join(sample_list), GLOBALS.parallel_jobs, trim_cmd)
+    parallel_trim_cmd = 'printf \'{}\' | parallel --gnu -j {} --delay 1.0 \'{}\'' .format('\\n'.join(sample_list), GLOBALS.parallel_jobs, trim_cmd)
 
     # run subprocess
     processes = []
@@ -158,7 +158,7 @@ def run_dupRadar(args, GFF_file, bam_files):
     # mark duplicates
     logging.info(' * running biobambam2/bammarkduplicates2 . . .')
     biobambam_cmd = 'bammarkduplicates2 I={{}} O={}/{{/.}}.markeddup.bam' .format(dupRadar_dir)
-    parallel_biobambam_cmd = 'printf \'{}\' | parallel --env PATH --workdir $PWD -j {} --delay 1.0 \'{}\'' .format('\\n'.join(bam_files), GLOBALS.parallel_jobs, biobambam_cmd)
+    parallel_biobambam_cmd = 'printf \'{}\' | parallel --gnu -j {} --delay 1.0 \'{}\'' .format('\\n'.join(bam_files), GLOBALS.parallel_jobs, biobambam_cmd)
 
     # run subprocess
     processes = []
@@ -177,7 +177,7 @@ def run_dupRadar(args, GFF_file, bam_files):
     # setup dupRadar cmd
     logging.info(' * running dupRadar . . .')
     dupRadar_cmd = 'dupRadar.sh {{}} {} stranded=yes paired=no outdir={} threads={}' .format(GFF_file.gff_filename, dupRadar_dir, str(args.threads))
-    parallel_dupRadar_cmd = 'printf \'{}\' | parallel --env PATH --workdir $PWD -j {} --delay 1.0 \'{}\'' .format('\\n'.join(rmdup_bam_files), GLOBALS.parallel_jobs, dupRadar_cmd)
+    parallel_dupRadar_cmd = 'printf \'{}\' | parallel --gnu -j {} --delay 1.0 \'{}\'' .format('\\n'.join(rmdup_bam_files), GLOBALS.parallel_jobs, dupRadar_cmd)
 
     # run subprocess
     processes = []
@@ -206,7 +206,7 @@ def run_covCheck(args, bam_files):
     logging.info(' * running bedtools . . .')
     alignment_dir = '{}/ALIGNMENT' .format(args.results_dir)
     bedtools_cmd = 'bedtools coverage -a {} -b {{}} > {}/{{/.}}.bedtools_output' .format(args.covCheck_ref, alignment_dir)
-    parallel_bedtools_cmd = 'printf \'{}\' | parallel --env PATH --workdir $PWD -j {} --delay 1.0 \'{}\'' .format('\\n'.join(bam_files), GLOBALS.parallel_jobs, bedtools_cmd)
+    parallel_bedtools_cmd = 'printf \'{}\' | parallel --gnu -j {} --delay 1.0 \'{}\'' .format('\\n'.join(bam_files), GLOBALS.parallel_jobs, bedtools_cmd)
 
     # run subprocess
     processes = []

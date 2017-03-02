@@ -45,7 +45,7 @@ supplied GFF file must contain 1. CDS and ncRNA features 2. fasta sequence 3. un
 
 Dependencies:
 
-parallel == 20161222
+parallel == 20170122
 multiqc == 0.9
 fastqc == 0.11.5
 kraken == 0.10.6

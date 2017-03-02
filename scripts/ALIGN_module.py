@@ -43,7 +43,7 @@ def run_alignData(args, sample_list):
     logging.info('now running bowtie2 . . .')
     bt2_ref = '{}/temp_dir/reference_fasta.fa' .format(args.results_dir)
     bt2_cmd = 'bowtie2 -x {} -q {{}} --very-sensitive-local -p {} 2> {}/{{/.}}.bt2log | samtools view -@ {} -q {} -bS - | samtools sort -@ {} -m 1G - -o {}/{{/.}}.sorted.bam && samtools index {}/{{/.}}.sorted.bam' .format(bt2_ref, str(args.threads), alignment_dir, str(args.threads), GLOBALS.MAPQ_score, str(args.threads), alignment_dir, alignment_dir)
-    parallel_bt2_cmd = 'printf \'{}\' | parallel --env PATH --workdir $PWD -j {} --delay 1.0 \'{}\'' .format('\\n'.join(sample_list), GLOBALS.parallel_jobs, bt2_cmd)
+    parallel_bt2_cmd = 'printf \'{}\' | parallel --gnu -j {} --delay 1.0 \'{}\'' .format('\\n'.join(sample_list), GLOBALS.parallel_jobs, bt2_cmd)
 
     # run subprocess
     processes = []
@@ -109,7 +109,7 @@ def run_countData(args, GFF_file, bam_files):
     logging.info(' * running featureCounts . . .')
     # t = feature type, g = attribute type, O = allow multioverlap, s = stand specific, T = threads, a = annotation, o = output dir
     featureCounts_cmd = 'featureCounts -t CDS -g ID -O -s 1 -T {} -a {} -o {}/{{/.}}.CDS.counts {{}}' .format(str(args.threads), GFF_file.gff_filename, counts_dir)
-    parallel_featureCounts_cmd = 'printf \'{}\' | parallel --env PATH --workdir $PWD -j {} --delay 1.0 \'{}\'' .format('\\n'.join(bam_files), GLOBALS.parallel_jobs, featureCounts_cmd)
+    parallel_featureCounts_cmd = 'printf \'{}\' | parallel --gnu -j {} --delay 1.0 \'{}\'' .format('\\n'.join(bam_files), GLOBALS.parallel_jobs, featureCounts_cmd)
 
     # run subprocess
     processes = []
@@ -122,7 +122,7 @@ def run_countData(args, GFF_file, bam_files):
 
     # repeat for ncRNA
     featureCounts_cmd = 'featureCounts -t ncRNA -g ID -O -s 1 -T {} -a {} -o {}/{{/.}}.ncRNA.counts {{}}' .format(str(args.threads), GFF_file.gff_filename, counts_dir)
-    parallel_featureCounts_cmd = 'printf \'{}\' | parallel --env PATH --workdir $PWD -j {} --delay 1.0 \'{}\'' .format('\\n'.join(bam_files), GLOBALS.parallel_jobs, featureCounts_cmd)
+    parallel_featureCounts_cmd = 'printf \'{}\' | parallel --gnu -j {} --delay 1.0 \'{}\'' .format('\\n'.join(bam_files), GLOBALS.parallel_jobs, featureCounts_cmd)
 
     # run subprocess
     processes = []

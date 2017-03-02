@@ -106,7 +106,7 @@ class GFF_annotationFile:
                     self.run_featureUnpack(line)
                     self.file_feature_count += 1
 
-                # read fasta entires (doesn't account for N's etc. at start of fasta sequence)
+                # read fasta entires
                 elif line.startswith('>'):
                     fastaHeader = line[1:]
                 elif line.upper().startswith(('A','T','C','G','N')) and fastaHeader:

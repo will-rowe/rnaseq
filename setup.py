@@ -28,6 +28,7 @@ setup(
         "matplotlib == 1.5.3",
         "Jinja2 == 2.7.3",
         "MarkupSafe == 0.23",
-        "multiqc == 0.8",
+        # the commandline executable multiqc needs to be installed and in path
+        #"multiqc == 0.8",
     ],
 )
