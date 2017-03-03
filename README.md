@@ -40,8 +40,7 @@ Optional - We use Anaconda to manage pipeline dependencies:
 `vim ./scripts/dupRadar.sh`
 
 
-4. Run the setup.py
-
+4. Run the setup.py (use the --user option if you are not in a virtual environment or have no root privileges)
 
 `python setup.py install --user`
 
