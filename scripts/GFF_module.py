@@ -192,7 +192,7 @@ class GFF_annotationFile:
             self.file_errors_dict[self.file_feature_count] = 'fewer than 1000 features found in the GFF file (this is an arbitary threshold) - only:'
 
         # are CDS and ncRNA present (use the seqtype for each feature)?
-        if sum(self.file_features_dict[feature][2].upper() == "CDS" for feature in self.file_features_dict) == 0 or sum(self.file_features_dict[feature][2].upper() == "NCRNA" for feature in self.file_features_dict) == 0:
+        if sum(self.file_features_dict[feature][2].upper() == "CDS" for feature in self.file_features_dict) == 0 and sum(self.file_features_dict[feature][2].upper() == "NCRNA" for feature in self.file_features_dict) == 0:
             self.file_errors_dict['NOcdsORrna'] = 'no CDS or ncRNA features found in the GFF file'
 
         # check fasta entries are present

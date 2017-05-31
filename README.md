@@ -48,3 +48,22 @@ Optional - We use Anaconda to manage pipeline dependencies:
 5. Call the program
 
 `rnaseq --help`
+
+
+
+## Output
+
+A report is generated for each input file. To combine these into a single tsv, try something like:
+
+1. remove comment lines from each file and get the feature names
+for i in *.REPORT; do sed -i -e '1,5d' $i; done
+cut -f1 filename.REPORT > features.tmp && sed -i "1s/^/FEATURE\n/" features.tmp
+
+2. join the 4th columns for a combined count file - making sure to add in the file name to the top of the column
+for i in *.REPORT; do cut -f4 $i > $i.countsonly; sed -i "1s/^/$i\n/" $i.countsonly; done
+paste features.tmp *.countsonly -d '\t' > D23-counts.tsv
+
+
+3. join the 5th columns for a combined TPM file
+for i in *.REPORT; do cut -f5 $i > $i.tpmsonly; sed -i "1s/^/$i\n/" $i.tpmsonly; done
+paste features.tmp *.tpmsonly -d '\t' > D23-tpms.tsv
