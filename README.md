@@ -31,7 +31,6 @@ This is a generic pipeline for processing RNA-seq data. It is intended to standa
   * calculate TPM values
   * generate report containing count data (for use in downstream DGE analysis e.g. limma/voom)
 
-
 ## To Do
 
 * unit tests and example data
