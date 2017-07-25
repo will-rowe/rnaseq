@@ -4,6 +4,18 @@ A pipeline for analysis of Salmonella RNA-seq data
 -----------
 
 
+## Contents
+
+* [Overview](#overview)
+* [To Do](#todo)
+* [Installation](#installation)
+* [Running](#running)
+* [Output](#output)
+* [Known Issues](#issues)
+
+
+<a name="overview"/>
+
 ## Overview
 
 This is a generic pipeline for processing RNA-seq data. It is intended to standardise the workflow used by the Hinton Lab (University of Liverpool, UK) to analyse stranded, single-end Illumina RNA-seq libraries. The software/workflow used is:
@@ -31,6 +43,9 @@ This is a generic pipeline for processing RNA-seq data. It is intended to standa
   * calculate TPM values
   * generate report containing count data (for use in downstream DGE analysis e.g. limma/voom)
 
+
+<a name="todo"/>
+
 ## To Do
 
 * unit tests and example data
@@ -48,6 +63,9 @@ This is a generic pipeline for processing RNA-seq data. It is intended to standa
 	* generate heatmaps to visualise sample similarity (for identifying batch effects)
 
 * fully integrate DupRadar and coverage checks (these aren't reported in the REPORT files and are checked manually)
+
+
+<a name="installation"/>
 
 ## Installation
 
@@ -95,6 +113,24 @@ python setup.py install --user
 rnaseq --help
 ```
 
+
+<a name="running"/>
+
+## Running
+
+The basic command to run the pipeline is:
+
+```
+rnaseq [OPTIONS] reference file_list
+```
+
+**reference**:	reference to be used for read alignment / annotation (must be in GFF3 format and include the fasta sequence)
+
+**file_list**:	the list of fastq files to be processed (must be newline separated text file containing full paths to files)
+
+
+<a name="output"/>
+
 ## Output
 
 A report is generated for each input file. To combine the count data from each report into a single *tsv* file (to use in R for DGE / upload to Degust), try something like:
@@ -123,7 +159,10 @@ for i in *.REPORT; do cut -f5 $i > $i.tpmsonly; sed -i "1s/^/$i\n/" $i.tpmsonly;
 paste features.tmp *.tpmsonly -d '\t' > D23-tpms.tsv
 ```
 
-## Known issues
+
+<a name="issues"/>
+
+## Known Issues
 
 * The pipeline checks for required software but does not check all version numbers - this needs to be checked by the user (using the requirements.txt file)
 
